@@ -4,11 +4,11 @@ A profile switcher for [Claude Code](https://claude.ai/code) CLI. Easily switch 
 
 ## Supported Providers
 
-| Provider | Command | API Source |
-|----------|---------|------------|
-| Claude (Native) | `ccuse claude` | Anthropic API |
-| GLM | `ccuse glm` | [Zhipu AI](https://open.bigmodel.cn/) |
-| Kimi | `ccuse kimi` | [Moonshot AI](https://platform.moonshot.cn/) |
+| Provider | Command | API Source | Models |
+|----------|---------|------------|--------|
+| Claude (Native) | `ccuse claude` | Anthropic API | claude-opus-4-6, claude-sonnet-4-6, etc. |
+| GLM | `ccuse glm` | [Zhipu AI](https://open.bigmodel.cn/) | GLM-5, GLM-4.7, GLM-4.7-FlashX |
+| Kimi | `ccuse kimi` | [Moonshot AI](https://platform.moonshot.cn/) | kimi-k2.5, kimi-k2-turbo-preview |
 
 ## Installation
 
@@ -99,8 +99,28 @@ ccuse claude  # Back to native Claude
 | `ccuse init-glm` | Create a GLM profile template |
 | `ccuse init-kimi` | Create a Kimi profile template |
 | `ccuse list` | List all available profiles |
+| `ccuse show` | Show current Claude Code configuration |
 | `ccuse edit <name>` | Edit a profile file |
 | `ccuse --help` | Show help message |
+
+## Available Models
+
+### GLM (Zhipu AI)
+
+| Model | Description | Context |
+|-------|-------------|---------|
+| `GLM-5` | Latest flagship, coding aligned with Claude Opus 4.5 | 200K |
+| `GLM-4.7` | High intelligence, better coding & aesthetics | 200K |
+| `GLM-4.7-FlashX` | Lightweight, fast, cost-effective | 200K |
+
+### Kimi (Moonshot AI)
+
+| Model | Description | Context |
+|-------|-------------|---------|
+| `kimi-k2.5` | Latest, most intelligent, multimodal | 256K |
+| `kimi-k2-0905-preview` | Enhanced agentic coding | 256K |
+| `kimi-k2-turbo-preview` | High speed (60-100 tokens/s) | 256K |
+| `moonshot-v1-8k/32k/128k` | Legacy text models | 8K-128K |
 
 ## How It Works
 

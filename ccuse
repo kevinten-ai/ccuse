@@ -16,10 +16,17 @@ Usage:
   ccuse init-glm        Create a GLM profile template
   ccuse init-kimi       Create a Kimi profile template
   ccuse list            List all available profiles
+  ccuse show            Show current Claude Code configuration
   ccuse edit <name>     Edit a profile file
 
 Environment overrides:
   CLAUDE_DIR, PROFILE_DIR, SETTINGS_FILE, BACKUP_SUFFIX
+
+Examples:
+  ccuse init-glm        # Create GLM profile, opens editor to set API key
+  ccuse glm             # Switch to GLM profile
+  ccuse show            # View current configuration
+  ccuse list            # See all available profiles
 USAGE
 }
 
@@ -77,7 +84,7 @@ init_glm() {
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7"
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7-FlashX"
   }
 }
 JSON
@@ -87,8 +94,14 @@ JSON
   echo "  Next Step: Set your Zhipu API Key"
   echo "=========================================="
   echo ""
-  echo "1. Get your API key from: https://open.bigmodel.cn/"
+  echo "1. Get your API key from: https://open.bigmodel.cn/iframe/login"
   echo "2. Replace YOUR_ZHIPU_API_KEY in the profile file"
+  echo ""
+  echo "Available models:"
+  echo "  - GLM-5            (Latest flagship, coding aligned with Claude Opus 4.5)"
+  echo "  - GLM-4.7          (High intelligence, better coding & aesthetics)"
+  echo "  - GLM-4.7-FlashX   (Lightweight, fast, cost-effective)"
+  echo ""
   echo "3. Then run: ccuse glm"
   echo ""
   edit_file "$file"
@@ -108,9 +121,9 @@ init_kimi() {
     "ANTHROPIC_BASE_URL": "https://api.moonshot.cn/v1",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "moonshot-v1-8k",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "moonshot-v1-8k",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "moonshot-v1-8k"
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "kimi-k2.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k2.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2-turbo-preview"
   }
 }
 JSON
@@ -120,8 +133,14 @@ JSON
   echo "  Next Step: Set your Kimi API Key"
   echo "=========================================="
   echo ""
-  echo "1. Get your API key from: https://platform.moonshot.cn/"
+  echo "1. Get your API key from: https://platform.moonshot.cn/console/api-keys"
   echo "2. Replace YOUR_KIMI_API_KEY in the profile file"
+  echo ""
+  echo "Available models:"
+  echo "  - kimi-k2.5          (Latest, most intelligent, 256k context)"
+  echo "  - kimi-k2-0905-preview (Enhanced agentic coding)"
+  echo "  - kimi-k2-turbo-preview (High speed, 60-100 tokens/s)"
+  echo ""
   echo "3. Then run: ccuse kimi"
   echo ""
   edit_file "$file"
@@ -166,6 +185,54 @@ list_profiles() {
   echo "Run 'ccuse <name>' to switch to a profile."
 }
 
+show_config() {
+  echo "Current Claude Code Configuration"
+  echo "=================================="
+  echo ""
+  echo "Settings file: $SETTINGS_FILE"
+  echo ""
+  if [[ ! -f "$SETTINGS_FILE" ]]; then
+    echo "No settings file found."
+    return
+  fi
+  echo "Configuration:"
+  echo ""
+  # Parse and display key environment variables
+  if command -v python3 &>/dev/null; then
+    python3 -c "
+import json
+import sys
+try:
+    with open('$SETTINGS_FILE', 'r') as f:
+        data = json.load(f)
+    env = data.get('env', {})
+    if not env:
+        print('  (empty configuration)')
+    else:
+        # Show key configurations, mask API keys
+        for key, value in sorted(env.items()):
+            if 'KEY' in key.upper() or 'TOKEN' in key.upper():
+                # Mask API key
+                if len(str(value)) > 8:
+                    masked = str(value)[:4] + '****' + str(value)[-4:]
+                else:
+                    masked = '****'
+                print(f'  {key}: {masked}')
+            else:
+                print(f'  {key}: {value}')
+except Exception as e:
+    print(f'  Error reading config: {e}')
+    sys.exit(1)
+"
+  else
+    # Fallback: just cat the file
+    cat "$SETTINGS_FILE"
+  fi
+  echo ""
+  echo "=================================="
+  echo "Run 'ccuse edit' to modify, 'ccuse list' to see profiles."
+}
+
 case "${1:-}" in
   claude) apply_profile "claude" ;;
   glm) apply_profile "glm" ;;
@@ -174,6 +241,7 @@ case "${1:-}" in
   init-glm) init_glm ;;
   init-kimi) init_kimi ;;
   list|ls) list_profiles ;;
+  show|config|current) show_config ;;
   edit)
     if [[ -z "${2:-}" ]]; then
       echo "Usage: ccuse edit <profile-name>" >&2
