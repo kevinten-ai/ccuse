@@ -13,20 +13,22 @@ Usage:
   ccuse glm             Switch to GLM (Zhipu AI) profile
   ccuse kimi            Switch to Kimi (Moonshot AI) profile
   ccuse init-claude     Save current settings.json as claude profile
-  ccuse init-glm        Create a GLM profile template
-  ccuse init-kimi       Create a Kimi profile template
+  ccuse init-glm        Create or reconfigure a GLM profile
+  ccuse init-kimi       Create or reconfigure a Kimi profile
   ccuse list            List all available profiles
   ccuse show            Show current Claude Code configuration
   ccuse edit <name>     Edit a profile file
+  ccuse remove <name>   Remove a profile
 
 Environment overrides:
   CLAUDE_DIR, PROFILE_DIR, SETTINGS_FILE, BACKUP_SUFFIX
 
 Examples:
-  ccuse init-glm        # Create GLM profile, opens editor to set API key
+  ccuse init-glm        # Create or reconfigure GLM profile
   ccuse glm             # Switch to GLM profile
   ccuse show            # View current configuration
   ccuse list            # See all available profiles
+  ccuse remove glm      # Remove GLM profile
 USAGE
 }
 
@@ -71,10 +73,24 @@ init_claude() {
 init_glm() {
   ensure_profiles_dir
   local file="$PROFILE_DIR/glm.json"
+  local backup_file=""
+
+  # If profile exists, ask user what to do
   if [[ -f "$file" ]]; then
-    echo "Profile already exists: $file" >&2
-    exit 1
+    echo "Profile already exists: $file"
+    read -rp "Do you want to reconfigure it? [y/N] " answer
+    if [[ "$answer" =~ ^[Yy]$ ]]; then
+      # Backup existing profile
+      backup_file="${file}.bak.$(date +%Y%m%d%H%M%S)"
+      cp "$file" "$backup_file"
+      echo "Backup created: $backup_file"
+      echo ""
+    else
+      echo "Keeping existing profile. Use 'ccuse edit glm' to modify it."
+      exit 0
+    fi
   fi
+
   cat > "$file" <<'JSON'
 {
   "env": {
@@ -88,7 +104,11 @@ init_glm() {
   }
 }
 JSON
-  echo "Created template: $file"
+  if [[ -n "$backup_file" ]]; then
+    echo "Reconfigured profile: $file"
+  else
+    echo "Created template: $file"
+  fi
   echo ""
   echo "=========================================="
   echo "  Next Step: Set your Zhipu API Key"
@@ -110,10 +130,24 @@ JSON
 init_kimi() {
   ensure_profiles_dir
   local file="$PROFILE_DIR/kimi.json"
+  local backup_file=""
+
+  # If profile exists, ask user what to do
   if [[ -f "$file" ]]; then
-    echo "Profile already exists: $file" >&2
-    exit 1
+    echo "Profile already exists: $file"
+    read -rp "Do you want to reconfigure it? [y/N] " answer
+    if [[ "$answer" =~ ^[Yy]$ ]]; then
+      # Backup existing profile
+      backup_file="${file}.bak.$(date +%Y%m%d%H%M%S)"
+      cp "$file" "$backup_file"
+      echo "Backup created: $backup_file"
+      echo ""
+    else
+      echo "Keeping existing profile. Use 'ccuse edit kimi' to modify it."
+      exit 0
+    fi
   fi
+
   cat > "$file" <<'JSON'
 {
   "env": {
@@ -127,7 +161,11 @@ init_kimi() {
   }
 }
 JSON
-  echo "Created template: $file"
+  if [[ -n "$backup_file" ]]; then
+    echo "Reconfigured profile: $file"
+  else
+    echo "Created template: $file"
+  fi
   echo ""
   echo "=========================================="
   echo "  Next Step: Set your Kimi API Key"
@@ -168,21 +206,79 @@ list_profiles() {
   echo "Available profiles in $PROFILE_DIR:"
   echo ""
   local current=""
+  local active_profile=""
   if [[ -f "$SETTINGS_FILE" ]]; then
     current=$(basename "$(readlink -f "$SETTINGS_FILE" 2>/dev/null || echo "$SETTINGS_FILE")" .json 2>/dev/null || echo "")
+    # Try to detect active profile by comparing content
+    for f in "$PROFILE_DIR"/*.json; do
+      if [[ -f "$f" ]]; then
+        if diff -q "$SETTINGS_FILE" "$f" >/dev/null 2>&1; then
+          active_profile=$(basename "$f" .json)
+          break
+        fi
+      fi
+    done
   fi
+
+  local count=0
   for f in "$PROFILE_DIR"/*.json; do
     if [[ -f "$f" ]]; then
+      ((count++)) || true
       local name=$(basename "$f" .json)
-      if [[ "$name" == "$current" ]]; then
-        echo "  * $name (current)"
+      if [[ "$name" == "$active_profile" ]]; then
+        echo "  * $name (active)"
       else
         echo "    $name"
       fi
     fi
   done
-  echo ""
-  echo "Run 'ccuse <name>' to switch to a profile."
+
+  if [[ $count -eq 0 ]]; then
+    echo "  (no profiles found)"
+    echo ""
+    echo "Run 'ccuse init-<provider>' to create a profile."
+  else
+    echo ""
+    echo "Run 'ccuse <name>' to switch to a profile."
+  fi
+}
+
+remove_profile() {
+  local name="${1:-}"
+  if [[ -z "$name" ]]; then
+    echo "Usage: ccuse remove <profile-name>" >&2
+    exit 1
+  fi
+
+  local file="$PROFILE_DIR/$name.json"
+  if [[ ! -f "$file" ]]; then
+    echo "Profile not found: $file" >&2
+    exit 1
+  fi
+
+  # Check if this is the currently active profile
+  local is_active=false
+  if [[ -f "$SETTINGS_FILE" ]] && diff -q "$SETTINGS_FILE" "$file" >/dev/null 2>&1; then
+    is_active=true
+  fi
+
+  echo "Removing profile: $name"
+  if [[ "$is_active" == "true" ]]; then
+    echo "Warning: This is your currently active profile!"
+  fi
+  read -rp "Are you sure? [y/N] " answer
+  if [[ "$answer" =~ ^[Yy]$ ]]; then
+    rm "$file"
+    echo "Profile removed: $name"
+    if [[ "$is_active" == "true" ]]; then
+      echo ""
+      echo "Note: Your current settings.json still uses this configuration."
+      echo "Switch to another profile with 'ccuse <name>' to change."
+    fi
+  else
+    echo "Cancelled."
+    exit 0
+  fi
 }
 
 show_config() {
@@ -241,6 +337,8 @@ case "${1:-}" in
   init-glm) init_glm ;;
   init-kimi) init_kimi ;;
   list|ls) list_profiles ;;
+  remove|rm) remove_profile "${2:-}" ;;
+  delete) remove_profile "${2:-}" ;;
   show|config|current) show_config ;;
   edit)
     if [[ -z "${2:-}" ]]; then

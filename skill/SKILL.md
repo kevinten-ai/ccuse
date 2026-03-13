@@ -88,11 +88,12 @@ ccuse claude  # Back to native Claude
 | `ccuse glm` | Switch to GLM (Zhipu AI) profile |
 | `ccuse kimi` | Switch to Kimi (Moonshot AI) profile |
 | `ccuse init-claude` | Save current settings as claude profile |
-| `ccuse init-glm` | Create a GLM profile template |
-| `ccuse init-kimi` | Create a Kimi profile template |
-| `ccuse list` | List all available profiles |
+| `ccuse init-glm` | Create or reconfigure a GLM profile |
+| `ccuse init-kimi` | Create or reconfigure a Kimi profile |
+| `ccuse list` | List all available profiles (shows active) |
 | `ccuse show` | Show current configuration |
 | `ccuse edit <name>` | Edit a profile file |
+| `ccuse remove <name>` | Remove a profile |
 
 ## Available Models
 
@@ -128,6 +129,28 @@ When you run `ccuse <name>`:
 1. Creates a backup of current `settings.json`
 2. Copies the profile to `settings.json`
 3. Claude Code uses the new configuration immediately
+
+### Reconfiguring a profile
+
+If a profile already exists, you can reconfigure it:
+
+```bash
+ccuse init-glm
+# Profile already exists: ~/.claude/profiles/glm.json
+# Do you want to reconfigure it? [y/N] y
+# Backup created: ~/.claude/profiles/glm.json.bak.20240313120000
+```
+
+The old profile is backed up with a timestamp before creating the new template.
+
+### Removing a profile
+
+```bash
+ccuse remove glm
+# Removing profile: glm
+# Are you sure? [y/N] y
+# Profile removed: glm
+```
 
 ## Troubleshooting
 
