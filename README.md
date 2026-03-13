@@ -2,6 +2,15 @@
 
 A profile switcher for [Claude Code](https://claude.ai/code) CLI. Easily switch between different API configurations.
 
+## Quick Install
+
+> **Copy this prompt and ask your Claude Code:**
+
+```
+Install ccuse by running:
+curl -fsSL https://raw.githubusercontent.com/kevinten-ai/ccuse/main/ccuse -o ~/.local/bin/ccuse && chmod +x ~/.local/bin/ccuse && ccuse --help
+```
+
 ## Supported Providers
 
 | Provider | Command | API Source | Models |
