@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLAUDE_DIR="${CLAUDE_DIR:-$HOME/.claude}"
+PROFILE_DIR="${PROFILE_DIR:-$CLAUDE_DIR/profiles}"
+SETTINGS_FILE="${SETTINGS_FILE:-$CLAUDE_DIR/settings.json}"
+BACKUP_SUFFIX="${BACKUP_SUFFIX:-.bak}"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  ccuse claude          Switch to native Claude profile
+  ccuse glm             Switch to GLM (Coding Plan) profile
+  ccuse init-claude     Save current settings.json as claude profile
+  ccuse init-glm        Create a GLM profile template
+
+Environment overrides:
+  CLAUDE_DIR, PROFILE_DIR, SETTINGS_FILE, BACKUP_SUFFIX
+USAGE
+}
+
+ensure_profiles_dir() {
+  mkdir -p "$PROFILE_DIR"
+}
+
+backup_settings() {
+  if [[ -f "$SETTINGS_FILE" ]]; then
+    cp "$SETTINGS_FILE" "${SETTINGS_FILE}${BACKUP_SUFFIX}"
+  fi
+}
+
+apply_profile() {
+  local name="$1"
+  local file="$PROFILE_DIR/$name.json"
+  if [[ ! -f "$file" ]]; then
+    echo "Missing profile file: $file" >&2
+    echo "Run: ccuse init-$name" >&2
+    exit 1
+  fi
+  backup_settings
+  cp "$file" "$SETTINGS_FILE"
+  echo "Switched to profile: $name"
+}
+
+init_claude() {
+  ensure_profiles_dir
+  if [[ -f "$SETTINGS_FILE" ]]; then
+    cp "$SETTINGS_FILE" "$PROFILE_DIR/claude.json"
+    echo "Saved current settings to: $PROFILE_DIR/claude.json"
+  else
+    printf '{\n}\n' > "$PROFILE_DIR/claude.json"
+    echo "Created empty profile: $PROFILE_DIR/claude.json"
+  fi
+}
+
+init_glm() {
+  ensure_profiles_dir
+  local file="$PROFILE_DIR/glm.json"
+  if [[ -f "$file" ]]; then
+    echo "Profile already exists: $file" >&2
+    exit 1
+  fi
+  cat > "$file" <<'JSON'
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_ZHIPU_API_KEY",
+    "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.7"
+  }
+}
+JSON
+  echo "Created template: $file"
+  echo "Edit it to set your real API key before using: ccuse glm"
+}
+
+case "${1:-}" in
+  claude) apply_profile "claude" ;;
+  glm) apply_profile "glm" ;;
+  init-claude) init_claude ;;
+  init-glm) init_glm ;;
+  -h|--help|help|"") usage ;;
+  *) echo "Unknown command: $1" >&2; usage; exit 2 ;;
+esac
