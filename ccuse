@@ -10,9 +10,13 @@ usage() {
   cat <<'USAGE'
 Usage:
   ccuse claude          Switch to native Claude profile
-  ccuse glm             Switch to GLM (Coding Plan) profile
+  ccuse glm             Switch to GLM (Zhipu AI) profile
+  ccuse kimi            Switch to Kimi (Moonshot AI) profile
   ccuse init-claude     Save current settings.json as claude profile
   ccuse init-glm        Create a GLM profile template
+  ccuse init-kimi       Create a Kimi profile template
+  ccuse list            List all available profiles
+  ccuse edit <name>     Edit a profile file
 
 Environment overrides:
   CLAUDE_DIR, PROFILE_DIR, SETTINGS_FILE, BACKUP_SUFFIX
@@ -44,13 +48,17 @@ apply_profile() {
 
 init_claude() {
   ensure_profiles_dir
+  local file="$PROFILE_DIR/claude.json"
   if [[ -f "$SETTINGS_FILE" ]]; then
-    cp "$SETTINGS_FILE" "$PROFILE_DIR/claude.json"
-    echo "Saved current settings to: $PROFILE_DIR/claude.json"
+    cp "$SETTINGS_FILE" "$file"
+    echo "Saved current settings to: $file"
   else
-    printf '{\n}\n' > "$PROFILE_DIR/claude.json"
-    echo "Created empty profile: $PROFILE_DIR/claude.json"
+    printf '{\n}\n' > "$file"
+    echo "Created empty profile: $file"
   fi
+  echo ""
+  echo "This profile uses your native Claude API key from Anthropic."
+  echo "No additional configuration needed."
 }
 
 init_glm() {
@@ -74,14 +82,110 @@ init_glm() {
 }
 JSON
   echo "Created template: $file"
-  echo "Edit it to set your real API key before using: ccuse glm"
+  echo ""
+  echo "=========================================="
+  echo "  Next Step: Set your Zhipu API Key"
+  echo "=========================================="
+  echo ""
+  echo "1. Get your API key from: https://open.bigmodel.cn/"
+  echo "2. Replace YOUR_ZHIPU_API_KEY in the profile file"
+  echo "3. Then run: ccuse glm"
+  echo ""
+  edit_file "$file"
+}
+
+init_kimi() {
+  ensure_profiles_dir
+  local file="$PROFILE_DIR/kimi.json"
+  if [[ -f "$file" ]]; then
+    echo "Profile already exists: $file" >&2
+    exit 1
+  fi
+  cat > "$file" <<'JSON'
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_KIMI_API_KEY",
+    "ANTHROPIC_BASE_URL": "https://api.moonshot.cn/v1",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "moonshot-v1-8k",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "moonshot-v1-8k",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "moonshot-v1-8k"
+  }
+}
+JSON
+  echo "Created template: $file"
+  echo ""
+  echo "=========================================="
+  echo "  Next Step: Set your Kimi API Key"
+  echo "=========================================="
+  echo ""
+  echo "1. Get your API key from: https://platform.moonshot.cn/"
+  echo "2. Replace YOUR_KIMI_API_KEY in the profile file"
+  echo "3. Then run: ccuse kimi"
+  echo ""
+  edit_file "$file"
+}
+
+edit_file() {
+  local file="$1"
+  if [[ -n "${EDITOR:-}" ]]; then
+    echo "Opening $file with $EDITOR..."
+    $EDITOR "$file"
+  elif command -v code &>/dev/null; then
+    echo "Opening $file with VS Code..."
+    code "$file"
+  elif command -v nano &>/dev/null; then
+    echo "Opening $file with nano..."
+    nano "$file"
+  else
+    echo "File location: $file"
+    echo "Please edit it manually."
+  fi
+}
+
+list_profiles() {
+  ensure_profiles_dir
+  echo "Available profiles in $PROFILE_DIR:"
+  echo ""
+  local current=""
+  if [[ -f "$SETTINGS_FILE" ]]; then
+    current=$(basename "$(readlink -f "$SETTINGS_FILE" 2>/dev/null || echo "$SETTINGS_FILE")" .json 2>/dev/null || echo "")
+  fi
+  for f in "$PROFILE_DIR"/*.json; do
+    if [[ -f "$f" ]]; then
+      local name=$(basename "$f" .json)
+      if [[ "$name" == "$current" ]]; then
+        echo "  * $name (current)"
+      else
+        echo "    $name"
+      fi
+    fi
+  done
+  echo ""
+  echo "Run 'ccuse <name>' to switch to a profile."
 }
 
 case "${1:-}" in
   claude) apply_profile "claude" ;;
   glm) apply_profile "glm" ;;
+  kimi) apply_profile "kimi" ;;
   init-claude) init_claude ;;
   init-glm) init_glm ;;
+  init-kimi) init_kimi ;;
+  list|ls) list_profiles ;;
+  edit)
+    if [[ -z "${2:-}" ]]; then
+      echo "Usage: ccuse edit <profile-name>" >&2
+      exit 1
+    fi
+    file="$PROFILE_DIR/${2}.json"
+    if [[ ! -f "$file" ]]; then
+      echo "Profile not found: $file" >&2
+      exit 1
+    fi
+    edit_file "$file"
+    ;;
   -h|--help|help|"") usage ;;
   *) echo "Unknown command: $1" >&2; usage; exit 2 ;;
 esac

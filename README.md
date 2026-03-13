@@ -2,52 +2,122 @@
 
 A profile switcher for [Claude Code](https://claude.ai/code) CLI. Easily switch between different API configurations.
 
+## Supported Providers
+
+| Provider | Command | API Source |
+|----------|---------|------------|
+| Claude (Native) | `ccuse claude` | Anthropic API |
+| GLM | `ccuse glm` | [Zhipu AI](https://open.bigmodel.cn/) |
+| Kimi | `ccuse kimi` | [Moonshot AI](https://platform.moonshot.cn/) |
+
 ## Installation
 
+### Quick Install
+
 ```bash
-# Clone and make executable
+# Clone and setup
 git clone https://github.com/kevinten-ai/ccuse.git
 cd ccuse
 chmod +x ccuse
 
-# Optional: add to PATH
-ln -s $(pwd)/ccuse /usr/local/bin/ccuse
+# Add to PATH (choose one)
+ln -s $(pwd)/ccuse /usr/local/bin/ccuse  # System-wide
+# OR
+ln -s $(pwd)/ccuse ~/.local/bin/ccuse     # User-local
 ```
 
-## Usage
+### Manual Install
+
+Just copy the `ccuse` script to anywhere in your PATH:
 
 ```bash
-ccuse claude       # Switch to native Claude profile
-ccuse glm          # Switch to GLM (Zhipu AI) profile
-ccuse init-claude  # Save current settings.json as claude profile
-ccuse init-glm     # Create a GLM profile template
+curl -O https://raw.githubusercontent.com/kevinten-ai/ccuse/main/ccuse
+chmod +x ccuse
+sudo mv ccuse /usr/local/bin/
 ```
 
-### Quick Start
+## Quick Start
 
-1. Save your current Claude settings as a profile:
-   ```bash
-   ccuse init-claude
-   ```
+![ccuse workflow](docs/workflow.png)
 
-2. Create a GLM profile template:
-   ```bash
-   ccuse init-glm
-   ```
+### Step 1: Save your current Claude settings
 
-3. Edit `~/.claude/profiles/glm.json` and set your Zhipu API key.
+```bash
+ccuse init-claude
+```
 
-4. Switch between profiles:
-   ```bash
-   ccuse glm   # Use GLM
-   ccuse claude # Use native Claude
-   ```
+This creates a backup of your current `settings.json` as the `claude` profile.
+
+### Step 2: Create additional profiles
+
+```bash
+# Create GLM profile
+ccuse init-glm
+
+# Create Kimi profile
+ccuse init-kimi
+```
+
+The init commands will:
+1. Create a profile template in `~/.claude/profiles/`
+2. Display instructions for getting your API key
+3. **Automatically open the file for editing** (if an editor is available)
+
+### Step 3: Set your API keys
+
+After running init commands, the profile file will open automatically. Replace the placeholder:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_API_KEY_HERE",
+    ...
+  }
+}
+```
+
+**Get your API keys from:**
+- GLM: https://open.bigmodel.cn/
+- Kimi: https://platform.moonshot.cn/
+
+### Step 4: Switch profiles
+
+```bash
+ccuse glm     # Use GLM
+ccuse kimi    # Use Kimi
+ccuse claude  # Back to native Claude
+```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `ccuse claude` | Switch to native Claude profile |
+| `ccuse glm` | Switch to GLM (Zhipu AI) profile |
+| `ccuse kimi` | Switch to Kimi (Moonshot AI) profile |
+| `ccuse init-claude` | Save current settings.json as claude profile |
+| `ccuse init-glm` | Create a GLM profile template |
+| `ccuse init-kimi` | Create a Kimi profile template |
+| `ccuse list` | List all available profiles |
+| `ccuse edit <name>` | Edit a profile file |
+| `ccuse --help` | Show help message |
 
 ## How It Works
 
-- Profiles are stored as JSON files in `~/.claude/profiles/`
-- Switching copies the profile to `~/.claude/settings.json`
-- Creates automatic backup with `.bak` suffix
+```
+~/.claude/
+├── settings.json      # Active configuration (what Claude Code reads)
+├── settings.json.bak  # Automatic backup
+└── profiles/
+    ├── claude.json    # Native Claude profile
+    ├── glm.json       # GLM profile
+    └── kimi.json      # Kimi profile
+```
+
+When you run `ccuse <name>`:
+1. Creates a backup of current `settings.json`
+2. Copies the profile to `settings.json`
+3. Claude Code uses the new configuration on next run
 
 ## Environment Variables
 
@@ -57,6 +127,62 @@ ccuse init-glm     # Create a GLM profile template
 | `PROFILE_DIR` | `$CLAUDE_DIR/profiles` | Directory for profile files |
 | `SETTINGS_FILE` | `$CLAUDE_DIR/settings.json` | Path to active settings |
 | `BACKUP_SUFFIX` | `.bak` | Suffix for backup files |
+
+## Adding Custom Profiles
+
+You can create custom profiles for any Anthropic-compatible API:
+
+1. Create a new JSON file in `~/.claude/profiles/`:
+
+```bash
+ccuse edit my-provider
+```
+
+2. Add your configuration:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "your-api-key",
+    "ANTHROPIC_BASE_URL": "https://your-api-endpoint/v1",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  }
+}
+```
+
+3. Use it:
+
+```bash
+ccuse my-provider
+```
+
+## Troubleshooting
+
+### Profile not found
+
+```
+Missing profile file: ~/.claude/profiles/glm.json
+Run: ccuse init-glm
+```
+
+Run the init command as suggested to create the profile.
+
+### API key errors
+
+Make sure you've replaced `YOUR_ZHIPU_API_KEY` or `YOUR_KIMI_API_KEY` with your actual API key in the profile file.
+
+### Editor not opening
+
+The script uses these editors in order:
+1. `$EDITOR` environment variable
+2. VS Code (`code`)
+3. `nano`
+
+Set your preferred editor:
+```bash
+export EDITOR=vim  # or code, nano, etc.
+```
 
 ## License
 
