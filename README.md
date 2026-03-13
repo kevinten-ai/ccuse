@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/kevinten-ai/ccuse/main/ccuse -o ~/.
 |----------|---------|------------|--------|
 | Claude (Native) | `ccuse claude` | Anthropic API | claude-opus-4-6, claude-sonnet-4-6, etc. |
 | GLM | `ccuse glm` | [Zhipu AI](https://open.bigmodel.cn/) | GLM-5, GLM-4.7, GLM-4.7-FlashX |
-| Kimi | `ccuse kimi` | [Moonshot AI](https://platform.moonshot.cn/) | kimi-k2.5, kimi-k2-turbo-preview |
+| Kimi | `ccuse kimi` | [Moonshot AI](https://platform.moonshot.cn/) | kimi-k2.5 |
 
 ## Installation
 
@@ -139,9 +139,6 @@ ccuse claude  # Back to native Claude
 | Model | Description | Context |
 |-------|-------------|---------|
 | `kimi-k2.5` | Latest, most intelligent, multimodal | 256K |
-| `kimi-k2-0905-preview` | Enhanced agentic coding | 256K |
-| `kimi-k2-turbo-preview` | High speed (60-100 tokens/s) | 256K |
-| `moonshot-v1-8k/32k/128k` | Legacy text models | 8K-128K |
 
 ## How It Works
 

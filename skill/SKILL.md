@@ -110,8 +110,6 @@ ccuse claude  # Back to native Claude
 | Model | Description | Context |
 |-------|-------------|---------|
 | `kimi-k2.5` | Latest, most intelligent, multimodal | 256K |
-| `kimi-k2-0905-preview` | Enhanced agentic coding | 256K |
-| `kimi-k2-turbo-preview` | High speed (60-100 tokens/s) | 256K |
 
 ## How It Works
 

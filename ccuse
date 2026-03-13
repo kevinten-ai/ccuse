@@ -152,12 +152,12 @@ init_kimi() {
 {
   "env": {
     "ANTHROPIC_AUTH_TOKEN": "YOUR_KIMI_API_KEY",
-    "ANTHROPIC_BASE_URL": "https://api.moonshot.cn/v1",
+    "ANTHROPIC_BASE_URL": "https://api.kimi.com/coding/",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "kimi-k2.5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k2.5",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2-turbo-preview"
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2.5"
   }
 }
 JSON
@@ -174,10 +174,7 @@ JSON
   echo "1. Get your API key from: https://platform.moonshot.cn/console/api-keys"
   echo "2. Replace YOUR_KIMI_API_KEY in the profile file"
   echo ""
-  echo "Available models:"
-  echo "  - kimi-k2.5          (Latest, most intelligent, 256k context)"
-  echo "  - kimi-k2-0905-preview (Enhanced agentic coding)"
-  echo "  - kimi-k2-turbo-preview (High speed, 60-100 tokens/s)"
+  echo "Default model: kimi-k2.5 (Latest, most intelligent, 256k context)"
   echo ""
   echo "3. Then run: ccuse kimi"
   echo ""
