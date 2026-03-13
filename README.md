@@ -12,7 +12,22 @@ A profile switcher for [Claude Code](https://claude.ai/code) CLI. Easily switch 
 
 ## Installation
 
-### Quick Install
+### One-Line Install (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kevinten-ai/ccuse/main/ccuse -o ~/.local/bin/ccuse && chmod +x ~/.local/bin/ccuse
+```
+
+### Install via Claude Code Skill
+
+Tell Claude Code: *"Install ccuse skill"* or run:
+
+```bash
+# Read and follow the skill instructions
+curl -fsSL https://raw.githubusercontent.com/kevinten-ai/ccuse/main/skill/SKILL.md
+```
+
+### Manual Install
 
 ```bash
 # Clone and setup
@@ -26,14 +41,10 @@ ln -s $(pwd)/ccuse /usr/local/bin/ccuse  # System-wide
 ln -s $(pwd)/ccuse ~/.local/bin/ccuse     # User-local
 ```
 
-### Manual Install
-
-Just copy the `ccuse` script to anywhere in your PATH:
+### Verify Installation
 
 ```bash
-curl -O https://raw.githubusercontent.com/kevinten-ai/ccuse/main/ccuse
-chmod +x ccuse
-sudo mv ccuse /usr/local/bin/
+ccuse --help
 ```
 
 ## Quick Start
