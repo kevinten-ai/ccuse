@@ -50,6 +50,17 @@ apply_profile() {
     echo "Run: ccuse init-$name" >&2
     exit 1
   fi
+  # Safety check: warn if claude profile contains third-party provider config
+  if [[ "$name" == "claude" ]] && grep -q '"ANTHROPIC_BASE_URL"' "$file" 2>/dev/null; then
+    echo "Warning: claude profile contains ANTHROPIC_BASE_URL (third-party provider config)." >&2
+    echo "This profile may have been saved while another provider was active." >&2
+    echo "Run 'ccuse init-claude' to recreate a clean Claude profile." >&2
+    read -rp "Apply anyway? [y/N] " answer
+    if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+      echo "Cancelled."
+      exit 0
+    fi
+  fi
   backup_settings
   cp "$file" "$SETTINGS_FILE"
   echo "Switched to profile: $name"
@@ -58,8 +69,59 @@ apply_profile() {
 init_claude() {
   ensure_profiles_dir
   local file="$PROFILE_DIR/claude.json"
+  local backup_file=""
+
+  # If profile exists, ask user what to do (consistent with init_glm/init_kimi)
+  if [[ -f "$file" ]]; then
+    echo "Profile already exists: $file"
+    read -rp "Do you want to reconfigure it? [y/N] " answer
+    if [[ "$answer" =~ ^[Yy]$ ]]; then
+      backup_file="${file}.bak.$(date +%Y%m%d%H%M%S)"
+      cp "$file" "$backup_file"
+      echo "Backup created: $backup_file"
+      echo ""
+    else
+      echo "Keeping existing profile. Use 'ccuse edit claude' to modify it."
+      exit 0
+    fi
+  fi
+
   if [[ -f "$SETTINGS_FILE" ]]; then
-    cp "$SETTINGS_FILE" "$file"
+    # Check if current settings contain third-party provider env vars
+    if grep -q '"ANTHROPIC_BASE_URL"' "$SETTINGS_FILE" 2>/dev/null; then
+      echo "Warning: Current settings.json contains a third-party provider configuration."
+      echo "Saving a clean Claude profile by removing provider-specific env variables."
+      echo ""
+      # Strip provider-specific env vars, keep everything else
+      if command -v python3 &>/dev/null; then
+        python3 -c "
+import json, sys
+with open(sys.argv[1], 'r', encoding='utf-8-sig') as f:
+    data = json.load(f)
+env = data.get('env', {})
+provider_keys = {
+    'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_BASE_URL', 'API_TIMEOUT_MS',
+    'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC',
+}
+for key in list(env.keys()):
+    if key in provider_keys or key.startswith('ANTHROPIC_DEFAULT_'):
+        del env[key]
+if not env:
+    data.pop('env', None)
+else:
+    data['env'] = env
+with open(sys.argv[2], 'w', encoding='utf-8') as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write('\n')
+" "$SETTINGS_FILE" "$file"
+      else
+        # Without python3, create a minimal clean profile
+        printf '{\n}\n' > "$file"
+        echo "Note: python3 not found, created minimal profile."
+      fi
+    else
+      cp "$SETTINGS_FILE" "$file"
+    fi
     echo "Saved current settings to: $file"
   else
     printf '{\n}\n' > "$file"
