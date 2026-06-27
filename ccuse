@@ -12,6 +12,8 @@ usage() {
   cat <<'USAGE'
 Usage:
   ccuse claude             Switch to native Claude profile (modifies settings.json)
+  ccuse ark                Switch to Volcengine Ark Coding Plan profile (modifies settings.json)
+  ccuse volcengine         Alias for ark
   ccuse glm                Switch to GLM (Zhipu AI) profile (modifies settings.json)
   ccuse kimi               Switch to Kimi (Moonshot AI) profile (modifies settings.json)
   ccuse minimax            Switch to MiniMax profile (modifies settings.json)
@@ -27,10 +29,13 @@ Usage:
   ccuse start <profile>    Launch Claude Code with profile env vars
   ccuse s <profile>        Alias for start
   ccuse cc [-c]            Quick start: claude profile + launch
+  ccuse ca [-c]            Quick start: ark profile + launch
   ccuse ck [-c]            Quick start: kimi profile + launch
   ccuse cg [-c]            Quick start: glm profile + launch
   ccuse cm [-c]            Quick start: minimax profile + launch
   ccuse init-claude        Save current settings.json as claude profile
+  ccuse init-ark           Create or reconfigure a Volcengine Ark Coding Plan profile
+  ccuse init-volcengine    Alias for init-ark
   ccuse init-glm           Create or reconfigure a GLM profile
   ccuse init-kimi          Create or reconfigure a Kimi profile
   ccuse init-minimax       Create or reconfigure a MiniMax profile
@@ -50,6 +55,9 @@ Environment overrides:
 
 Examples:
   ccuse init-claude        # Save native Claude Code account/subscription profile
+  ccuse init-ark           # Create or reconfigure Ark Coding Plan profile
+  ccuse start ark -c       # Try Ark once and resume the last conversation
+  ccuse project ark        # Persist Ark for this repository only
   ccuse init-kimi          # Create or reconfigure Kimi profile
   ccuse start kimi -c      # Try Kimi once and resume the last conversation
   ccuse project kimi       # Persist Kimi for this repository only
@@ -83,10 +91,10 @@ validate_profile_name() {
 
 is_reserved_profile_name() {
   case "$1" in
-    global|g|local|project|p|start|s|cc|ck|cg|cm|list|ls|show|config|current|doctor|status|edit|remove|rm|delete|help)
+    global|g|local|project|p|start|s|cc|ca|ck|cg|cm|list|ls|show|config|current|doctor|status|edit|remove|rm|delete|help|volcengine)
       return 0
       ;;
-    init-claude|init-glm|init-kimi|init-minimax)
+    init-claude|init-ark|init-volcengine|init-glm|init-kimi|init-minimax)
       return 0
       ;;
     -h|--help)
@@ -133,7 +141,7 @@ apply_profile() {
   if [[ ! -f "$file" ]]; then
     echo "Missing profile file: $file" >&2
     case "$name" in
-      claude|glm|kimi|minimax) echo "Run: ccuse init-$name" >&2 ;;
+      claude|ark|glm|kimi|minimax) echo "Run: ccuse init-$name" >&2 ;;
       *) echo "Run: ccuse edit $name" >&2 ;;
     esac
     exit 1
@@ -228,6 +236,62 @@ with open(sys.argv[2], 'w', encoding='utf-8') as f:
   echo ""
   echo "This profile uses native Claude Code account/subscription mode or your existing Anthropic configuration."
   echo "No third-party provider API key is needed."
+}
+
+init_ark() {
+  ensure_profiles_dir
+  local file="$PROFILE_DIR/ark.json"
+  local backup_file=""
+
+  # If profile exists, ask user what to do
+  if [[ -f "$file" ]]; then
+    echo "Profile already exists: $file"
+    read -rp "Do you want to reconfigure it? [y/N] " answer
+    if [[ "$answer" =~ ^[Yy]$ ]]; then
+      # Backup existing profile
+      backup_file="${file}.bak.$(date +%Y%m%d%H%M%S)"
+      cp "$file" "$backup_file"
+      echo "Backup created: $backup_file"
+      echo ""
+    else
+      echo "Keeping existing profile. Use 'ccuse edit ark' to modify it."
+      exit 0
+    fi
+  fi
+
+  cat > "$file" <<'JSON'
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_ARK_API_KEY",
+    "ANTHROPIC_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
+    "API_TIMEOUT_MS": "3000000",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "doubao-seed-2-0-code-preview-260215",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "doubao-seed-2-0-code-preview-260215",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "doubao-seed-2-0-code-preview-260215"
+  }
+}
+JSON
+  chmod 600 "$file"
+  if [[ -n "$backup_file" ]]; then
+    echo "Reconfigured profile: $file"
+  else
+    echo "Created template: $file"
+  fi
+  echo ""
+  echo "=========================================="
+  echo "  Next Step: Set your Volcengine Ark API Key"
+  echo "=========================================="
+  echo ""
+  echo "1. Get your API key from Volcengine Ark Coding Plan."
+  echo "2. Replace YOUR_ARK_API_KEY in the profile file."
+  echo ""
+  echo "Default Coding Plan model:"
+  echo "  - doubao-seed-2-0-code-preview-260215"
+  echo ""
+  echo "3. Then run: ccuse ark"
+  echo ""
+  edit_file "$file"
 }
 
 init_glm() {
@@ -606,7 +670,7 @@ doctor() {
     done
     if [[ $count -eq 0 ]]; then
       echo "  (none)"
-      echo "  Next: ccuse init-claude, ccuse init-kimi, ccuse init-glm, or ccuse init-minimax"
+      echo "  Next: ccuse init-claude, ccuse init-ark, ccuse init-kimi, ccuse init-glm, or ccuse init-minimax"
     fi
   else
     echo "  Profile directory does not exist yet."
@@ -856,7 +920,7 @@ start_session() {
   echo "Launching Claude Code..."
   echo ""
 
-  local claude_args=()
+  local -a claude_args=()
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -c|--continue) claude_args+=(--continue) ;;
@@ -866,7 +930,11 @@ start_session() {
   done
 
   if command -v claude &>/dev/null; then
-    claude "${claude_args[@]}"
+    if [[ ${#claude_args[@]} -gt 0 ]]; then
+      claude "${claude_args[@]}"
+    else
+      claude
+    fi
   else
     echo "Error: 'claude' command not found." >&2
     echo "Please install Claude Code CLI first." >&2
@@ -876,6 +944,7 @@ start_session() {
 
 case "${1:-}" in
   claude) apply_profile "claude" ;;
+  ark|volcengine) apply_profile "ark" ;;
   glm) apply_profile "glm" ;;
   kimi) apply_profile "kimi" ;;
   minimax) apply_profile "minimax" ;;
@@ -883,10 +952,12 @@ case "${1:-}" in
   project|p) project_command "${2:-}" ;;
   start|s) start_session "${2:-}" "${@:3}" ;;
   cc) shift; start_session "claude" "$@" ;;
+  ca) shift; start_session "ark" "$@" ;;
   ck) shift; start_session "kimi" "$@" ;;
   cg) shift; start_session "glm" "$@" ;;
   cm) shift; start_session "minimax" "$@" ;;
   init-claude) init_claude ;;
+  init-ark|init-volcengine) init_ark ;;
   init-glm) init_glm ;;
   init-kimi) init_kimi ;;
   init-minimax) init_minimax ;;

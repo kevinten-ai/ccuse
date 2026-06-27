@@ -1,11 +1,11 @@
 ---
 name: ccuse
-description: Install and configure ccuse - a profile switcher for Claude Code CLI. Use when the user wants to switch between different AI providers (Claude, GLM/Zhipu, Kimi/Moonshot, MiniMax) in Claude Code, or mentions ccuse, profile switching, or using alternative API providers.
+description: Install and configure ccuse - a profile switcher for Claude Code CLI. Use when the user wants to switch between different AI providers (Claude, Volcengine Ark Coding Plan, GLM/Zhipu, Kimi/Moonshot, MiniMax) in Claude Code, or mentions ccuse, profile switching, or using alternative API providers.
 ---
 
 # ccuse
 
-ccuse is a profile switcher for Claude Code CLI. It supports native Claude Code account/subscription mode, Anthropic API profiles, GLM (Zhipu AI), Kimi (Moonshot AI), and MiniMax profiles.
+ccuse is a profile switcher for Claude Code CLI. It supports native Claude Code account/subscription mode, Anthropic API profiles, Volcengine Ark Coding Plan, GLM (Zhipu AI), Kimi (Moonshot AI), and MiniMax profiles.
 
 ## Installation
 
@@ -40,6 +40,12 @@ Use this profile for native Claude Code account/subscription mode; it does not n
 ### Step 2: Create a provider profile
 
 Choose one or more providers to configure:
+
+**Volcengine Ark Coding Plan:**
+```bash
+ccuse init-ark
+```
+Use your Ark Coding Plan API key from the Volcengine console.
 
 **GLM (Zhipu AI):**
 ```bash
@@ -82,6 +88,7 @@ Save and close the file.
 ### Step 4: Switch profiles
 
 ```bash
+ccuse ark     # Use Volcengine Ark Coding Plan
 ccuse glm     # Use GLM (Zhipu AI)
 ccuse kimi    # Use Kimi (Moonshot AI)
 ccuse minimax # Use MiniMax
@@ -93,6 +100,7 @@ ccuse claude  # Back to native Claude
 | Command | Description |
 |---------|-------------|
 | `ccuse claude` | Switch to native Claude profile |
+| `ccuse ark` / `volcengine` | Switch to Volcengine Ark Coding Plan profile |
 | `ccuse global <profile>` / `g` | Explicitly switch the global default |
 | `ccuse glm` | Switch to GLM (Zhipu AI) profile |
 | `ccuse kimi` | Switch to Kimi (Moonshot AI) profile |
@@ -101,8 +109,10 @@ ccuse claude  # Back to native Claude
 | `eval "$(ccuse local <profile>)"` | Load profile env vars into current shell session |
 | `ccuse project <profile>` / `p` | Persist a profile for the current project in `./.claude/settings.json` |
 | `ccuse start <profile> [-c]` | Launch Claude Code with profile env vars |
-| `ccuse cc` / `ck` / `cg` / `cm` | Launch Claude Code with claude/kimi/glm/minimax |
+| `ccuse cc` / `ca` / `ck` / `cg` / `cm` | Launch Claude Code with claude/ark/kimi/glm/minimax |
 | `ccuse init-claude` | Save current settings as claude profile |
+| `ccuse init-ark` | Create or reconfigure an Ark Coding Plan profile |
+| `ccuse init-volcengine` | Alias for `ccuse init-ark` |
 | `ccuse init-glm` | Create or reconfigure a GLM profile |
 | `ccuse init-kimi` | Create or reconfigure a Kimi profile |
 | `ccuse init-minimax` | Create or reconfigure a MiniMax profile |
@@ -112,9 +122,15 @@ ccuse claude  # Back to native Claude
 | `ccuse edit <name>` | Create or edit a profile file |
 | `ccuse remove <name>` / `rm` / `delete` | Remove a profile |
 
-Session-level commands (`local`, `start`, `cc`, `ck`, `cg`, `cm`) require `python3` or `python` to parse profile JSON safely. They clear known provider env vars before applying the selected profile, so native Claude Code subscription mode is not polluted by a previous third-party provider.
+Session-level commands (`local`, `start`, `cc`, `ca`, `ck`, `cg`, `cm`) require `python3` or `python` to parse profile JSON safely. They clear known provider env vars before applying the selected profile, so native Claude Code subscription mode is not polluted by a previous third-party provider.
 
 ## Available Models
+
+### Volcengine Ark Coding Plan
+
+| Model | Description | Context |
+|-------|-------------|---------|
+| `doubao-seed-2-0-code-preview-260215` | Coding Plan compatible code model | See Volcengine model docs |
 
 ### GLM (Zhipu AI)
 
@@ -145,6 +161,7 @@ Session-level commands (`local`, `start`, `cc`, `ck`, `cg`, `cm`) require `pytho
 ├── settings.json.bak  # Automatic backup
 └── profiles/
     ├── claude.json    # Native Claude profile
+    ├── ark.json       # Volcengine Ark Coding Plan profile
     ├── glm.json       # GLM profile
     └── kimi.json      # Kimi profile
 ```
@@ -188,7 +205,7 @@ Run: ccuse init-glm
 Run the init command as suggested.
 
 **API key errors:**
-Make sure you've replaced `YOUR_ZHIPU_API_KEY`, `YOUR_KIMI_API_KEY`, or `YOUR_MINIMAX_API_KEY` with your actual API key.
+Make sure you've replaced `YOUR_ARK_API_KEY`, `YOUR_ZHIPU_API_KEY`, `YOUR_KIMI_API_KEY`, or `YOUR_MINIMAX_API_KEY` with your actual API key.
 
 **Editor not opening:**
 Set your preferred editor:

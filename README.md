@@ -16,6 +16,7 @@ curl -fsSL https://raw.githubusercontent.com/kevinten-ai/ccuse/main/ccuse -o ~/.
 | Provider | Command | API Source | Models |
 |----------|---------|------------|--------|
 | Claude (Native) | `ccuse claude` | Claude Code account/subscription or Anthropic API | claude-opus-4-6, claude-sonnet-4-6, etc. |
+| Volcengine Ark | `ccuse ark` | [Volcengine Ark Coding Plan](https://www.volcengine.com/product/ark) | doubao-seed-2-0-code-preview-260215 |
 | GLM | `ccuse glm` | [Zhipu AI](https://open.bigmodel.cn/) | GLM-5.1, GLM-4.7, GLM-4.7-FlashX |
 | Kimi | `ccuse kimi` | [Moonshot AI](https://platform.moonshot.cn/) | kimi-k2.6 |
 | MiniMax | `ccuse minimax` | [MiniMax](https://www.minimax.io/) | MiniMax-M2.7, MiniMax-M2.7-highspeed |
@@ -78,6 +79,9 @@ This creates a clean `claude` profile from your current Claude Code settings. Us
 ### Step 3: Create additional profiles
 
 ```bash
+# Create Volcengine Ark Coding Plan profile
+ccuse init-ark
+
 # Create GLM profile
 ccuse init-glm
 
@@ -107,6 +111,7 @@ After running init commands, the profile file will open automatically. Replace t
 ```
 
 **Get your API keys from:**
+- Volcengine Ark: Volcengine Ark Coding Plan console
 - GLM: https://open.bigmodel.cn/
 - Kimi: https://platform.moonshot.cn/
 - MiniMax: https://www.minimax.io/
@@ -114,6 +119,9 @@ After running init commands, the profile file will open automatically. Replace t
 ### Step 5: Choose where to use a profile
 
 ```bash
+ccuse start ark -c        # Use Ark once for this launch
+ccuse project ark         # Use Ark whenever Claude Code runs in this repo
+ccuse global ark          # Use Ark globally
 ccuse start kimi -c       # Use Kimi once for this launch
 ccuse project kimi        # Use Kimi whenever Claude Code runs in this repo
 ccuse global kimi         # Use Kimi globally
@@ -138,11 +146,13 @@ ccuse global claude       # Back to native Claude subscription mode globally
 | Command | Aliases | File impact | Description |
 |---------|---------|-------------|-------------|
 | `ccuse claude` | `ccuse global claude` | Writes `settings.json` | Switch to native Claude profile |
+| `ccuse ark` | `ccuse global ark`, `ccuse volcengine` | Writes `settings.json` | Switch to Volcengine Ark Coding Plan profile |
 | `ccuse glm` | `ccuse global glm` | Writes `settings.json` | Switch to GLM (Zhipu AI) profile |
 | `ccuse kimi` | `ccuse global kimi` | Writes `settings.json` | Switch to Kimi (Moonshot AI) profile |
 | `ccuse minimax` | `ccuse global minimax` | Writes `settings.json` | Switch to MiniMax profile |
 | `ccuse <profile>` | - | Writes `settings.json` | Switch to any custom profile in `$PROFILE_DIR` |
 | `ccuse init-claude` | - | Writes `claude.json` | Save current settings as a clean Claude profile |
+| `ccuse init-ark` | `ccuse init-volcengine` | Writes `ark.json` | Create or reconfigure an Ark Coding Plan profile |
 | `ccuse init-glm` | - | Writes `glm.json` | Create or reconfigure a GLM profile |
 | `ccuse init-kimi` | - | Writes `kimi.json` | Create or reconfigure a Kimi profile |
 | `ccuse init-minimax` | - | Writes `minimax.json` | Create or reconfigure a MiniMax profile |
@@ -163,11 +173,12 @@ These commands require `python3` or `python` so profile JSON can be parsed safel
 | `ccuse local show` | `ccuse local current` | Read-only | Show current shell's Claude env vars with secrets masked |
 | `ccuse start <profile> [-c]` | `ccuse s <profile> [-c]` | No file changes | Load env vars and launch Claude Code |
 | `ccuse cc [-c]` | - | No file changes | Quick start: claude profile + launch |
+| `ccuse ca [-c]` | - | No file changes | Quick start: ark profile + launch |
 | `ccuse ck [-c]` | - | No file changes | Quick start: kimi profile + launch |
 | `ccuse cg [-c]` | - | No file changes | Quick start: glm profile + launch |
 | `ccuse cm [-c]` | - | No file changes | Quick start: minimax profile + launch |
 
-The `-c` or `--continue` flag resumes your last Claude Code conversation. `local` prints shell commands for you to `eval`; `start` and the quick aliases set env vars only for the Claude Code process they launch. These commands first clear known provider env vars, then load the selected profile, so `ccuse local claude` and `ccuse start claude` work for native Claude Code subscription mode even after using Kimi/GLM/MiniMax. None of these commands modify `settings.json`.
+The `-c` or `--continue` flag resumes your last Claude Code conversation. `local` prints shell commands for you to `eval`; `start` and the quick aliases set env vars only for the Claude Code process they launch. These commands first clear known provider env vars, then load the selected profile, so `ccuse local claude` and `ccuse start claude` work for native Claude Code subscription mode even after using Ark/Kimi/GLM/MiniMax. None of these commands modify `settings.json`.
 
 ### Project-Scoped Persistent Profiles
 
@@ -187,6 +198,12 @@ ccuse claude         # Global default can still be native Claude subscription mo
 ```
 
 ## Available Models
+
+### Volcengine Ark Coding Plan
+
+| Model | Description | Context |
+|-------|-------------|---------|
+| `doubao-seed-2-0-code-preview-260215` | Coding Plan compatible code model | See Volcengine model docs |
 
 ### GLM (Zhipu AI)
 
@@ -219,6 +236,7 @@ ccuse claude         # Global default can still be native Claude subscription mo
 ├── settings.json.bak  # Automatic backup
 └── profiles/
     ├── claude.json    # Native Claude Code account/subscription profile
+    ├── ark.json       # Volcengine Ark Coding Plan profile
     ├── glm.json       # GLM profile
     ├── kimi.json      # Kimi profile
     └── minimax.json   # MiniMax profile
@@ -271,7 +289,7 @@ When you run `ccuse project <name>`:
 
 You can create custom profiles for any Anthropic-compatible API:
 
-1. Create or open a JSON file in `~/.claude/profiles/`. Profile names must start with a letter or number and may contain letters, numbers, dots, underscores, and hyphens. Custom profile names cannot reuse built-in commands or aliases such as `global`, `project`, `local`, `start`, `doctor`, `list`, `show`, `edit`, `remove`, `cc`, `ck`, `cg`, or `cm`.
+1. Create or open a JSON file in `~/.claude/profiles/`. Profile names must start with a letter or number and may contain letters, numbers, dots, underscores, and hyphens. Custom profile names cannot reuse built-in commands or aliases such as `global`, `project`, `local`, `start`, `doctor`, `list`, `show`, `edit`, `remove`, `volcengine`, `cc`, `ca`, `ck`, `cg`, or `cm`.
 
 ```bash
 ccuse edit my-provider
@@ -335,7 +353,7 @@ ccuse remove glm
 
 ### API key errors
 
-Make sure you've replaced `YOUR_ZHIPU_API_KEY`, `YOUR_KIMI_API_KEY`, or `YOUR_MINIMAX_API_KEY` with your actual API key in the profile file.
+Make sure you've replaced `YOUR_ARK_API_KEY`, `YOUR_ZHIPU_API_KEY`, `YOUR_KIMI_API_KEY`, or `YOUR_MINIMAX_API_KEY` with your actual API key in the profile file.
 
 ### Editor not opening
 

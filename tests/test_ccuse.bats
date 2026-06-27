@@ -39,6 +39,8 @@ teardown() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"Usage:"* ]]
   [[ "$output" == *"ccuse claude"* ]]
+  [[ "$output" == *"ccuse ark"* ]]
+  [[ "$output" == *"ccuse ca"* ]]
   [[ "$output" == *"ccuse glm"* ]]
   [[ "$output" == *"ccuse kimi"* ]]
   [[ "$output" == *"ccuse minimax"* ]]
@@ -76,6 +78,16 @@ teardown() {
   run bash "$CCUSE_BIN" claude
   [ "$status" -eq 0 ]
   [[ "$output" == *"Switched to profile: claude"* ]]
+  [ -f "$SETTINGS_FILE" ]
+}
+
+@test "switch: ark profile applies successfully" {
+  cat > "$PROFILE_DIR/ark.json" <<'JSON'
+{"env":{"ANTHROPIC_BASE_URL":"https://ark.cn-beijing.volces.com/api/coding"}}
+JSON
+  run bash "$CCUSE_BIN" ark
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Switched to profile: ark"* ]]
   [ -f "$SETTINGS_FILE" ]
 }
 
@@ -234,6 +246,16 @@ JSON
   [[ "$output" == *"glm-5.1"* ]]
   [[ "$output" == *"open.bigmodel.cn"* ]]
   [[ "$output" == *"YOUR_ZHIPU_API_KEY"* ]]
+}
+
+@test "init-ark: creates template with correct models" {
+  run bash "$CCUSE_BIN" init-ark
+  [ "$status" -eq 0 ]
+  [ -f "$PROFILE_DIR/ark.json" ]
+  run cat "$PROFILE_DIR/ark.json"
+  [[ "$output" == *"doubao-seed-2-0-code-preview-260215"* ]]
+  [[ "$output" == *"ark.cn-beijing.volces.com/api/coding"* ]]
+  [[ "$output" == *"YOUR_ARK_API_KEY"* ]]
 }
 
 @test "init-kimi: creates template with correct models" {
@@ -568,6 +590,16 @@ JSON
   [ "$status" -eq 0 ]
   [[ "$output" == *"Loading profile env vars: kimi"* ]]
   [[ "$output" == *"MODEL: kimi-k2.6"* ]]
+}
+
+@test "quick: ca launches ark profile" {
+  cat > "$PROFILE_DIR/ark.json" <<'JSON'
+{"env":{"MODEL":"doubao-seed-2-0-code-preview-260215"}}
+JSON
+  run bash "$CCUSE_BIN" ca
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Loading profile env vars: ark"* ]]
+  [[ "$output" == *"MODEL: doubao-seed-2-0-code-preview-260215"* ]]
 }
 
 @test "quick: cg launches glm profile" {

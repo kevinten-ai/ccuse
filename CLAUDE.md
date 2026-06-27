@@ -4,12 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`ccuse` is a profile switcher for Claude Code CLI. It supports global profile switching by swapping `settings.json`, and session-level provider switching with environment variables.
+`ccuse` is a profile switcher for Claude Code CLI. It supports global profile switching by swapping `settings.json`, project-scoped settings, and session-level provider switching with environment variables.
 
 ## Commands
 
 ```bash
 ccuse claude       # Switch to native Claude profile
+ccuse ark          # Switch to Volcengine Ark Coding Plan profile
+ccuse volcengine   # Alias for ark
 ccuse global kimi  # Explicit global switch
 ccuse glm          # Switch to GLM (Zhipu AI) profile
 ccuse kimi         # Switch to Kimi (Moonshot AI) profile
@@ -19,6 +21,7 @@ ccuse local kimi   # Print shell exports for a session-level profile
 ccuse project kimi # Persist Kimi for the current project only
 ccuse ck -c        # Launch Claude Code with Kimi and --continue
 ccuse init-claude  # Save current settings.json as claude profile
+ccuse init-ark     # Create an Ark Coding Plan profile template
 ccuse init-glm     # Create a GLM profile template
 ccuse init-kimi    # Create a Kimi profile template
 ccuse init-minimax # Create a MiniMax profile template
@@ -43,6 +46,7 @@ ccuse edit <name>  # Edit a profile file
 | Provider | Base URL | Models |
 |----------|----------|--------|
 | Claude (Native) | Claude Code account/subscription or api.anthropic.com | claude-opus-4-6, claude-sonnet-4-6, etc. |
+| Volcengine Ark | ark.cn-beijing.volces.com/api/coding | doubao-seed-2-0-code-preview-260215 |
 | GLM | open.bigmodel.cn/api/anthropic | glm-5.1, glm-4.7, glm-4.7-FlashX |
 | Kimi | api.kimi.com/coding/ | kimi-k2.6 |
 | MiniMax | api.minimax.io/anthropic | MiniMax-M2.7, MiniMax-M2.7-highspeed |
