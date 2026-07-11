@@ -1,11 +1,11 @@
 ---
 name: ccuse
-description: Install and configure ccuse - a profile switcher for Claude Code CLI. Use when the user wants to switch between different AI providers (Claude, Volcengine Ark Coding Plan, GLM/Zhipu, Kimi/Moonshot, MiniMax) in Claude Code, or mentions ccuse, profile switching, or using alternative API providers.
+description: Install and configure ccuse - a profile switcher for Claude Code CLI. Use when the user wants to switch between Claude, Volcengine Ark Agent Plan (including GLM models), Kimi/Moonshot, or MiniMax in Claude Code, or mentions ccuse, profile switching, or using alternative API providers.
 ---
 
 # ccuse
 
-ccuse is a profile switcher for Claude Code CLI. It supports native Claude Code account/subscription mode, Anthropic API profiles, Volcengine Ark Coding Plan, GLM (Zhipu AI), Kimi (Moonshot AI), and MiniMax profiles.
+ccuse is a profile switcher for Claude Code CLI. It supports native Claude Code account/subscription mode, Anthropic API profiles, Volcengine Ark Agent Plan (including GLM models), Kimi (Moonshot AI), and MiniMax profiles.
 
 ## Installation
 
@@ -41,17 +41,17 @@ Use this profile for native Claude Code account/subscription mode; it does not n
 
 Choose one or more providers to configure:
 
-**Volcengine Ark Coding Plan:**
+**Volcengine Ark Agent Plan:**
 ```bash
 ccuse init-ark
 ```
-Use your Ark Coding Plan API key from the Volcengine console.
+Use your Ark Agent Plan API key from the Volcengine console.
 
-**GLM (Zhipu AI):**
+**GLM via Ark Agent Plan:**
 ```bash
 ccuse init-glm
 ```
-Get your API key from: https://open.bigmodel.cn/
+Use the same Ark Agent Plan API key as `ccuse init-ark`.
 
 **Kimi (Moonshot AI):**
 ```bash
@@ -88,8 +88,8 @@ Save and close the file.
 ### Step 4: Switch profiles
 
 ```bash
-ccuse ark     # Use Volcengine Ark Coding Plan
-ccuse glm     # Use GLM (Zhipu AI)
+ccuse ark     # Use Volcengine Ark Agent Plan
+ccuse glm     # Use a GLM model through Ark Agent Plan
 ccuse kimi    # Use Kimi (Moonshot AI)
 ccuse minimax # Use MiniMax
 ccuse claude  # Back to native Claude
@@ -100,9 +100,9 @@ ccuse claude  # Back to native Claude
 | Command | Description |
 |---------|-------------|
 | `ccuse claude` | Switch to native Claude profile |
-| `ccuse ark` / `volcengine` | Switch to Volcengine Ark Coding Plan profile |
+| `ccuse ark` / `volcengine` | Switch to Volcengine Ark Agent Plan profile |
 | `ccuse global <profile>` / `g` | Explicitly switch the global default |
-| `ccuse glm` | Switch to GLM (Zhipu AI) profile |
+| `ccuse glm` | Switch to a GLM model through Ark Agent Plan |
 | `ccuse kimi` | Switch to Kimi (Moonshot AI) profile |
 | `ccuse minimax` | Switch to MiniMax profile |
 | `ccuse <profile>` | Switch to a custom profile in `~/.claude/profiles/` |
@@ -111,7 +111,7 @@ ccuse claude  # Back to native Claude
 | `ccuse start <profile> [-c]` | Launch Claude Code with profile env vars |
 | `ccuse cc` / `ca` / `ck` / `cg` / `cm` | Launch Claude Code with claude/ark/kimi/glm/minimax |
 | `ccuse init-claude` | Save current settings as claude profile |
-| `ccuse init-ark` | Create or reconfigure an Ark Coding Plan profile |
+| `ccuse init-ark` | Create or reconfigure an Ark Agent Plan profile |
 | `ccuse init-volcengine` | Alias for `ccuse init-ark` |
 | `ccuse init-glm` | Create or reconfigure a GLM profile |
 | `ccuse init-kimi` | Create or reconfigure a Kimi profile |
@@ -126,13 +126,13 @@ Session-level commands (`local`, `start`, `cc`, `ca`, `ck`, `cg`, `cm`) require 
 
 ## Available Models
 
-### Volcengine Ark Coding Plan
+### Volcengine Ark Agent Plan
 
 | Model | Description | Context |
 |-------|-------------|---------|
-| `doubao-seed-2-0-code-preview-260215` | Coding Plan compatible code model | See Volcengine model docs |
+| `doubao-seed-2-0-code-preview-260215` | Agent Plan compatible code model | See Volcengine model docs |
 
-### GLM (Zhipu AI)
+### GLM via Ark Agent Plan
 
 | Model | Description | Context |
 |-------|-------------|---------|
@@ -161,7 +161,7 @@ Session-level commands (`local`, `start`, `cc`, `ca`, `ck`, `cg`, `cm`) require 
 ├── settings.json.bak  # Automatic backup
 └── profiles/
     ├── claude.json    # Native Claude profile
-    ├── ark.json       # Volcengine Ark Coding Plan profile
+    ├── ark.json       # Volcengine Ark Agent Plan profile
     ├── glm.json       # GLM profile
     └── kimi.json      # Kimi profile
 ```
@@ -205,7 +205,7 @@ Run: ccuse init-glm
 Run the init command as suggested.
 
 **API key errors:**
-Make sure you've replaced `YOUR_ARK_API_KEY`, `YOUR_ZHIPU_API_KEY`, `YOUR_KIMI_API_KEY`, or `YOUR_MINIMAX_API_KEY` with your actual API key.
+Make sure you've replaced `YOUR_ARK_API_KEY`, `YOUR_KIMI_API_KEY`, or `YOUR_MINIMAX_API_KEY` with your actual API key.
 
 **Editor not opening:**
 Set your preferred editor:

@@ -12,9 +12,9 @@ usage() {
   cat <<'USAGE'
 Usage:
   ccuse claude             Switch to native Claude profile (modifies settings.json)
-  ccuse ark                Switch to Volcengine Ark Coding Plan profile (modifies settings.json)
+  ccuse ark                Switch to Volcengine Ark Agent Plan profile (modifies settings.json)
   ccuse volcengine         Alias for ark
-  ccuse glm                Switch to GLM (Zhipu AI) profile (modifies settings.json)
+  ccuse glm                Switch to a GLM model through Ark Agent Plan
   ccuse kimi               Switch to Kimi (Moonshot AI) profile (modifies settings.json)
   ccuse minimax            Switch to MiniMax profile (modifies settings.json)
   ccuse global <profile>   Explicit global profile switch
@@ -34,9 +34,9 @@ Usage:
   ccuse cg [-c]            Quick start: glm profile + launch
   ccuse cm [-c]            Quick start: minimax profile + launch
   ccuse init-claude        Save current settings.json as claude profile
-  ccuse init-ark           Create or reconfigure a Volcengine Ark Coding Plan profile
+  ccuse init-ark           Create or reconfigure a Volcengine Ark Agent Plan profile
   ccuse init-volcengine    Alias for init-ark
-  ccuse init-glm           Create or reconfigure a GLM profile
+  ccuse init-glm           Create a GLM-on-Ark Agent Plan profile
   ccuse init-kimi          Create or reconfigure a Kimi profile
   ccuse init-minimax       Create or reconfigure a MiniMax profile
   ccuse list               List all available profiles
@@ -55,7 +55,7 @@ Environment overrides:
 
 Examples:
   ccuse init-claude        # Save native Claude Code account/subscription profile
-  ccuse init-ark           # Create or reconfigure Ark Coding Plan profile
+  ccuse init-ark           # Create or reconfigure Ark Agent Plan profile
   ccuse start ark -c       # Try Ark once and resume the last conversation
   ccuse project ark        # Persist Ark for this repository only
   ccuse init-kimi          # Create or reconfigure Kimi profile
@@ -263,7 +263,7 @@ init_ark() {
 {
   "env": {
     "ANTHROPIC_AUTH_TOKEN": "YOUR_ARK_API_KEY",
-    "ANTHROPIC_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
+    "ANTHROPIC_BASE_URL": "https://ark.cn-beijing.volces.com/api/plan",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "doubao-seed-2-0-code-preview-260215",
@@ -283,10 +283,10 @@ JSON
   echo "  Next Step: Set your Volcengine Ark API Key"
   echo "=========================================="
   echo ""
-  echo "1. Get your API key from Volcengine Ark Coding Plan."
+  echo "1. Get your API key from Volcengine Ark Agent Plan."
   echo "2. Replace YOUR_ARK_API_KEY in the profile file."
   echo ""
-  echo "Default Coding Plan model:"
+  echo "Default Agent Plan model:"
   echo "  - doubao-seed-2-0-code-preview-260215"
   echo ""
   echo "3. Then run: ccuse ark"
@@ -318,8 +318,8 @@ init_glm() {
   cat > "$file" <<'JSON'
 {
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "YOUR_ZHIPU_API_KEY",
-    "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_ARK_API_KEY",
+    "ANTHROPIC_BASE_URL": "https://ark.cn-beijing.volces.com/api/plan",
     "API_TIMEOUT_MS": "3000000",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.1",
@@ -335,11 +335,11 @@ JSON
   fi
   echo ""
   echo "=========================================="
-  echo "  Next Step: Set your Zhipu API Key"
+  echo "  Next Step: Set your Volcengine Ark Agent Plan API Key"
   echo "=========================================="
   echo ""
-  echo "1. Get your API key from: https://open.bigmodel.cn/iframe/login"
-  echo "2. Replace YOUR_ZHIPU_API_KEY in the profile file"
+  echo "1. Get your API key from Volcengine Ark Agent Plan."
+  echo "2. Replace YOUR_ARK_API_KEY in the profile file"
   echo ""
   echo "Available models:"
   echo "  - GLM-5.1          (Latest flagship, best overall performance)"

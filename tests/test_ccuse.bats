@@ -83,7 +83,7 @@ teardown() {
 
 @test "switch: ark profile applies successfully" {
   cat > "$PROFILE_DIR/ark.json" <<'JSON'
-{"env":{"ANTHROPIC_BASE_URL":"https://ark.cn-beijing.volces.com/api/coding"}}
+{"env":{"ANTHROPIC_BASE_URL":"https://ark.cn-beijing.volces.com/api/plan"}}
 JSON
   run bash "$CCUSE_BIN" ark
   [ "$status" -eq 0 ]
@@ -93,7 +93,7 @@ JSON
 
 @test "switch: glm profile applies successfully" {
   cat > "$PROFILE_DIR/glm.json" <<'JSON'
-{"env":{"ANTHROPIC_BASE_URL":"https://open.bigmodel.cn/api/anthropic"}}
+{"env":{"ANTHROPIC_BASE_URL":"https://ark.cn-beijing.volces.com/api/plan"}}
 JSON
   run bash "$CCUSE_BIN" glm
   [ "$status" -eq 0 ]
@@ -238,14 +238,14 @@ JSON
   [[ "$output" == *"existing"* ]]
 }
 
-@test "init-glm: creates template with correct models" {
+@test "init-glm: creates an Ark Agent Plan template with GLM models" {
   run bash "$CCUSE_BIN" init-glm
   [ "$status" -eq 0 ]
   [ -f "$PROFILE_DIR/glm.json" ]
   run cat "$PROFILE_DIR/glm.json"
   [[ "$output" == *"glm-5.1"* ]]
-  [[ "$output" == *"open.bigmodel.cn"* ]]
-  [[ "$output" == *"YOUR_ZHIPU_API_KEY"* ]]
+  [[ "$output" == *"ark.cn-beijing.volces.com/api/plan"* ]]
+  [[ "$output" == *"YOUR_ARK_API_KEY"* ]]
 }
 
 @test "init-ark: creates template with correct models" {
@@ -254,7 +254,7 @@ JSON
   [ -f "$PROFILE_DIR/ark.json" ]
   run cat "$PROFILE_DIR/ark.json"
   [[ "$output" == *"doubao-seed-2-0-code-preview-260215"* ]]
-  [[ "$output" == *"ark.cn-beijing.volces.com/api/coding"* ]]
+  [[ "$output" == *"ark.cn-beijing.volces.com/api/plan"* ]]
   [[ "$output" == *"YOUR_ARK_API_KEY"* ]]
 }
 
